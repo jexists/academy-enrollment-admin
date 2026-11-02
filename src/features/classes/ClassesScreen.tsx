@@ -34,7 +34,7 @@ export function ClassesScreen() {
   const [grade, setGrade] = useState<number>(0);
   const selected = Number(params.get('id')) || data?.[0]?.id || null;
   const rows = (data ?? []).filter((c) => !grade || c.targetGrade === grade);
-  const grades = [...new Set((data ?? []).map((c) => c.targetGrade))].sort();
+  const grades = [...new Set((data ?? []).map((c) => c.targetGrade))].sort((a, b) => a - b);
 
   return (
     <>
