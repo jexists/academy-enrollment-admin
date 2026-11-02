@@ -30,6 +30,10 @@ function Sidebar() {
   const user = session?.user;
   if (!user) return null;
   const items = navFor(user.role);
+  // 가장 길게 맞는 메뉴 하나만 켠다 (/timetable/new는 '강사 시간표'가 아니라 '수업 시간표 생성')
+  const activeHref = items
+    .filter((item) => (item.href === '/' ? pathname === '/' : pathname === item.href || pathname.startsWith(`${item.href}/`)))
+    .sort((a, b) => b.href.length - a.href.length)[0]?.href;
 
   return (
     <aside className="sticky top-0 flex h-screen w-[220px] shrink-0 flex-col border-r border-line px-3 py-5">
@@ -41,7 +45,7 @@ function Sidebar() {
       </p>
       <nav className="mt-6 flex flex-1 flex-col gap-0.5 overflow-y-auto">
         {items.map((item) => {
-          const active = item.href === '/' ? pathname === '/' : pathname.startsWith(item.href);
+          const active = item.href === activeHref;
           return (
             <Link
               key={item.href}
