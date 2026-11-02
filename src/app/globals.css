@@ -1,0 +1,109 @@
+/* 클래스는 src 안에서만 찾는다 (.next 캐시 같은 파일을 읽어 엉뚱한 클래스가 생기지 않게) */
+@import "tailwindcss" source("../");
+
+/*
+ * 디자인 토큰 — docs/design/tokens.md와 같은 값. 색·글자·모서리는 여기 한 곳에서만 정한다.
+ * web과 admin이 같은 파일을 쓴다. 한쪽을 고치면 다른 쪽에도 그대로 복사한다.
+ */
+@theme {
+  --color-primary: #ff5d00;
+  --color-primary-hover: #eb5600;
+  --color-primary-c: #fcf5f1;
+  --color-canvas: #ffffff;
+  --color-fg: #0c0c0c;
+  --color-muted: rgba(55, 55, 55, 0.8);
+  --color-subtle: #949494;
+  --color-s1: rgba(0, 0, 0, 0.03);
+  --color-s2: rgba(0, 0, 0, 0.06);
+  --color-line: rgba(0, 0, 0, 0.05);
+  --color-line2: rgba(0, 0, 0, 0.1);
+  --color-dim: rgba(0, 0, 0, 0.7);
+  --color-toast: #202020;
+
+  --color-info: #376dfa;
+  --color-info-c: #f3f3fc;
+  --color-ok: #078641;
+  --color-ok-c: #dbfce1;
+  --color-warn: #cb8409;
+  --color-warn-c: #fcf2e7;
+  --color-err: #e30f32;
+  --color-err-c: #fcf1f0;
+  --color-gray: #949494;
+  --color-gray-c: rgba(0, 0, 0, 0.05);
+
+  --font-sans: "Pretendard Variable", Pretendard, -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo",
+    "Noto Sans KR", system-ui, sans-serif;
+
+  /* 글자: 페이지 제목 / 섹션 제목 / 숫자 / 본문 / 어드민 본문 / 보조 / 배지 / 읽는 글 */
+  --text-page: 1.375rem;
+  --text-page--line-height: 1.875rem;
+  --text-page--font-weight: 700;
+  --text-sec: 1rem;
+  --text-sec--line-height: 1.375rem;
+  --text-sec--font-weight: 700;
+  --text-stat: 1.5rem;
+  --text-stat--line-height: 1.875rem;
+  --text-stat--font-weight: 700;
+  --text-body: 0.9375rem;
+  --text-body--line-height: 1.375rem;
+  --text-body-sm: 0.875rem;
+  --text-body-sm--line-height: 1.25rem;
+  --text-meta: 0.8125rem;
+  --text-meta--line-height: 1.125rem;
+  --text-badge: 0.75rem;
+  --text-badge--line-height: 1rem;
+  --text-badge--font-weight: 500;
+  --text-reading: 1.125rem;
+  --text-reading--line-height: 1.875rem;
+
+  /* 모서리: 버튼·입력 8, Modal·시트 12, 칩·Toast는 rounded-full */
+  --radius-control: 8px;
+  --radius-modal: 12px;
+
+  --animate-rise: rise 180ms ease-out;
+  @keyframes rise {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  --animate-sheet: sheet 200ms ease-out;
+  @keyframes sheet {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+}
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  background: var(--color-canvas);
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+  font-size: var(--text-body);
+  line-height: var(--text-body--line-height);
+  -webkit-font-smoothing: antialiased;
+  word-break: keep-all;
+  overflow-wrap: break-word;
+}
+
+/* 포커스 표시는 키보드로 움직일 때만 (2px 주황 40%) */
+:focus-visible {
+  outline: 2px solid rgb(255 93 0 / 0.4);
+  outline-offset: 2px;
+}
+
+dialog::backdrop {
+  background: var(--color-dim);
+}
+
+body:has(dialog[open]) {
+  overflow: hidden;
+}
+
+@media (min-width: 640px) {
+  :root {
+    --text-page: 1.5rem;
+    --text-page--line-height: 2rem;
+  }
+}
