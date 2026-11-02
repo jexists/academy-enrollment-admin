@@ -153,7 +153,7 @@ export function EnrollmentsScreen() {
 function PhoneDialog({ open, onClose, onDone }: { open: boolean; onClose: () => void; onDone: () => void }) {
   const { data: students } = useApi<StudentRow[]>(open ? '/admin/students' : null);
   const { data: classes } = useApi<ClassRow[]>(open ? '/admin/classes' : null);
-  const [form, setForm] = useState({ studentId: '', classId: '', startDate: new Date(Date.now() + 9 * 3600_000).toISOString().slice(0, 10) });
+  const [form, setForm] = useState(() => ({ studentId: '', classId: '', startDate: new Date(Date.now() + 9 * 3600_000).toISOString().slice(0, 10) }));
   const [busy, setBusy] = useState(false);
   const mutate = useMutate();
   const toast = useToast();

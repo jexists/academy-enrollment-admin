@@ -53,7 +53,7 @@ export function useApi<T>(path: string | null): ApiState<T> {
 export function useMutate() {
   const { session } = useAuth();
   return useCallback(
-    <T,>(path: string, method: 'POST' | 'PATCH' | 'DELETE', body?: unknown) =>
+    <T,>(path: string, method: 'POST' | 'PUT' | 'PATCH' | 'DELETE', body?: unknown) =>
       api<T>(path, { method, body, token: session?.token }),
     [session?.token],
   );

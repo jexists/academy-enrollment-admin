@@ -14,7 +14,7 @@ import { ApiError, errorMessage } from '@/lib/api';
 import { gradeLabel, scheduleLabel, won } from '@/lib/format';
 import { useApi, useMutate } from '@/lib/use-api';
 import { cn } from '@/lib/cn';
-import { MonthCalendar } from './MonthCalendar';
+import { MonthCalendar } from '@/components/ui/MonthCalendar';
 import { SessionActions } from './SessionActions';
 import type { ClassDetail, ClassRow, Session } from './types';
 
