@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { ToastProvider } from '@/components/ui/Toast';
+import { AuthProvider } from '@/features/auth/AuthProvider';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -17,7 +18,9 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
         />
       </head>
       <body className="flex min-h-full flex-col">
-        <ToastProvider>{children}</ToastProvider>
+        <ToastProvider>
+          <AuthProvider>{children}</AuthProvider>
+        </ToastProvider>
       </body>
     </html>
   );

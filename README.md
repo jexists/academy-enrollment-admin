@@ -11,5 +11,10 @@ npm run dev -- --port 3201
 - 확인: `npm run build`
 - 공용 컴포넌트(`src/components/ui`)와 `src/app/globals.css`는 코어 웹 저장소와 같은 파일이다.
 
+## 로그인
+- `/login` — 이메일 + 비밀번호. 원장·강사 계정만 들어올 수 있다.
+- 로컬에서는 로그인 화면 아래 **데모 계정 버튼**을 누르면 바로 로그인된다 (백엔드 `DEMO_LOGIN=true`일 때만 보임).
+- 임시 비밀번호 계정은 `/change-password`로 먼저 보낸다.
+
 ## 배포 (Vercel)
 - 환경 변수 `NEXT_PUBLIC_API_URL`에 Render 백엔드 주소.
