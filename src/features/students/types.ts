@@ -31,6 +31,7 @@ export interface StudentDetail extends StudentRow {
   guardians: { id: number; relation: '부' | '모'; name: string; phone: string; email: string | null; isActive: boolean | null }[];
   notes: { id: number; category: string; notedOn: string; content: string; target: string; authorName: string | null }[];
   siblings: { id: number; name: string }[];
+  enrollments: { id: number; status: string; className: string; teacherName: string; startDate: string; endDate: string | null; refundAmount: number | null }[];
 }
 
 export interface School {

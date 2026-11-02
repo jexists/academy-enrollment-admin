@@ -1,5 +1,6 @@
 'use client';
 
+import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/Button';
 import { PageHeader } from '@/components/ui/PageHeader';
@@ -45,7 +46,9 @@ const minutesLate = (start: string, arrived: string) =>
 /** 출결 입력 — final/screens/a-attendance. 강사는 담당 반만, 지각이면 도착 시각 → 몇 분 늦었는지 자동 (B10, 결정36) */
 export function AttendanceScreen() {
   const { session: auth } = useAuth();
-  const [date, setDate] = useState(today());
+  const params = useSearchParams();
+  // 대시보드·내 스케줄에서 ?date=로 들어오면 그날부터
+  const [date, setDate] = useState(() => params.get('date') ?? today());
   const { data: sessions } = useApi<SessionItem[]>(`/staff/sessions?date=${date}`);
   const [picked, setPicked] = useState<number | null>(null);
   const sessionId = picked ?? sessions?.find((s) => s.status === '정상')?.id ?? null;

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Suspense } from 'react';
 import { AttendanceScreen } from '@/features/attendance/AttendanceScreen';
 import { AdminShell } from '@/features/shell/AdminShell';
 
@@ -8,7 +9,9 @@ export const instant = false;
 export default function AttendancePage() {
   return (
     <AdminShell>
-      <AttendanceScreen />
+      <Suspense>
+        <AttendanceScreen />
+      </Suspense>
     </AdminShell>
   );
 }

@@ -17,7 +17,7 @@ import { ApiError, errorMessage } from '@/lib/api';
 import { useApi, useMutate } from '@/lib/use-api';
 import { NOTE_CATEGORIES, type School, type StudentDetail } from './types';
 
-type Tab = 'basic' | 'history' | 'notes';
+type Tab = 'basic' | 'history' | 'enroll' | 'attendance' | 'scores' | 'notes';
 type Dialog = 'school' | 'grade' | 'note' | null;
 
 const today = () => new Date(Date.now() + 9 * 3600_000).toISOString().slice(0, 10);
@@ -87,6 +87,9 @@ export function StudentDetailPanel({ studentId, onChanged }: { studentId: number
         tabs={[
           { value: 'basic', label: '기본' },
           { value: 'history', label: '학적 이력' },
+          { value: 'enroll', label: '수강' },
+          { value: 'attendance', label: '출결' },
+          { value: 'scores', label: '성적' },
           { value: 'notes', label: `상담·메모 ${data.notes.length}` },
         ]}
         value={tab}
@@ -95,7 +98,18 @@ export function StudentDetailPanel({ studentId, onChanged }: { studentId: number
 
       {tab === 'basic' && <BasicTab data={data} />}
       {tab === 'history' && <HistoryTab data={data} onOpen={setDialog} />}
-      {tab === 'notes' && <NotesTab data={data} onOpen={() => setDialog('note')} />}
+      {tab === 'enroll' && <EnrollTab data={data} />}
+      {tab === 'attendance' && <AttendanceTab studentId={data.id} />}
+      {tab === 'scores' && <ScoresTab studentId={data.id} />}
+      {tab === 'notes' && <NotesTab data={data} onOpen={() => setDialog('note')} onDeleted={async (noteId) => {
+        try {
+          await mutate(`/admin/notes/${noteId}`, 'DELETE');
+          toast.success('메모를 지웠어요. 변경 기록에서 되살릴 수 있어요');
+          setData({ ...data, notes: data.notes.filter((n) => n.id !== noteId) });
+        } catch (reason) {
+          toast.error(errorMessage(reason));
+        }
+      }} />}
 
       <SchoolChangeDialog
         open={dialog === 'school'}
@@ -156,7 +170,6 @@ function BasicTab({ data }: { data: StudentDetail }) {
           <p className="text-body-sm text-muted">{data.siblings.map((s) => s.name).join(', ')}</p>
         </section>
       )}
-      <p className="text-meta text-subtle">수강·출결·성적 탭은 3단계 다음 항목에서 붙여요.</p>
     </div>
   );
 }
@@ -209,7 +222,7 @@ function HistoryTab({ data, onOpen }: { data: StudentDetail; onOpen: (d: Dialog)
   );
 }
 
-function NotesTab({ data, onOpen }: { data: StudentDetail; onOpen: () => void }) {
+function NotesTab({ data, onOpen, onDeleted }: { data: StudentDetail; onOpen: () => void; onDeleted: (noteId: number) => void }) {
   const [category, setCategory] = useState<string>('전체');
   const rows = category === '전체' ? data.notes : data.notes.filter((n) => n.category === category);
   return (
@@ -237,6 +250,9 @@ function NotesTab({ data, onOpen }: { data: StudentDetail; onOpen: () => void })
               <StatusBadge status={n.category} tone="info" />
               <span className="flex-1">{n.content}</span>
               <span className="shrink-0 text-meta text-subtle">{n.authorName ?? '시스템'}</span>
+              <button type="button" className="shrink-0 text-meta text-subtle hover:text-err" onClick={() => onDeleted(n.id)}>
+                지우기
+              </button>
             </li>
           ))}
         </ul>
@@ -438,5 +454,74 @@ function NoteDialog({ open, onClose, submit, onDone, data }: DialogProps & { dat
         <TextArea label="내용" value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} error={errors.content} />
       </form>
     </Modal>
+  );
+}
+
+function EnrollTab({ data }: { data: StudentDetail }) {
+  if (data.enrollments.length === 0) return <EmptyState message="수강 기록이 없어요." />;
+  return (
+    <ul className="flex flex-col divide-y divide-line">
+      {data.enrollments.map((e) => (
+        <li key={e.id} className="flex min-h-12 items-center gap-3 text-body-sm">
+          <StatusBadge status={e.status} />
+          <span className="w-28 font-medium">{e.className}</span>
+          <span className="flex-1 text-muted">{e.teacherName}</span>
+          <span className="tabular-nums text-meta text-subtle">
+            {e.startDate}
+            {e.endDate ? ` ~ ${e.endDate}` : ''}
+            {e.refundAmount !== null ? ` · 환불 ${e.refundAmount.toLocaleString('ko-KR')}원` : ''}
+          </span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function AttendanceTab({ studentId }: { studentId: number }) {
+  const { data } = useApi<{ month: string; 출석: number; 지각: number; 결석: number; rate: number | null; convertedAbsence: number; records: { date: string; className: string; status: string; attendType: string; lateMinutes: number | null }[] }>(
+    `/admin/students/${studentId}/attendance`,
+  );
+  if (!data) return <Skeleton className="h-32" />;
+  return (
+    <div className="flex flex-col gap-3">
+      <p className="text-body-sm text-muted">
+        {data.month.replace('-', '년 ')}월 · 출석률 <b className="text-fg">{data.rate === null ? '—' : `${data.rate}%`}</b> · 출석 {data.출석} · 지각 {data.지각} · 결석 {data.결석} (환산 결석 {data.convertedAbsence}회)
+      </p>
+      {data.records.length === 0 ? (
+        <EmptyState message="이번 달 출결이 없어요." />
+      ) : (
+        <ul className="flex flex-col divide-y divide-line">
+          {data.records.map((r, i) => (
+            <li key={i} className="flex min-h-11 items-center gap-3 text-body-sm">
+              <span className="w-16 tabular-nums text-muted">{r.date.slice(5)}</span>
+              <span className="flex-1">{r.className}{r.attendType === '보강' && <span className="ml-1 text-meta text-info">보강</span>}</span>
+              {r.lateMinutes ? <span className="text-meta text-warn">{r.lateMinutes}분</span> : null}
+              <StatusBadge status={r.status} />
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
+function ScoresTab({ studentId }: { studentId: number }) {
+  const { data } = useApi<{ scores: { id: number; examName: string; examDate: string; score: number; diff: number | null }[]; average: number | null }>(`/admin/students/${studentId}/scores`);
+  if (!data) return <Skeleton className="h-32" />;
+  if (data.scores.length === 0) return <EmptyState message="성적이 없어요. 성적 입력에서 넣을 수 있어요." />;
+  return (
+    <div className="flex flex-col gap-3">
+      <p className="text-body-sm text-muted">평균 <b className="text-fg">{data.average}점</b> · {data.scores.length}회</p>
+      <ul className="flex flex-col divide-y divide-line">
+        {data.scores.map((s) => (
+          <li key={s.id} className="flex min-h-11 items-center gap-3 text-body-sm">
+            <span className="w-24 tabular-nums text-muted">{s.examDate}</span>
+            <span className="flex-1 font-medium">{s.examName}</span>
+            <span className={s.diff === null ? 'text-subtle' : s.diff >= 0 ? 'text-ok' : 'text-err'}>{s.diff === null ? '—' : s.diff >= 0 ? `▲ ${s.diff}` : `▼ ${-s.diff}`}</span>
+            <span className="w-12 text-right font-bold tabular-nums">{s.score}점</span>
+          </li>
+        ))}
+      </ul>
+    </div>
   );
 }
