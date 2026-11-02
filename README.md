@@ -1,4 +1,4 @@
-# hanbit-math-admin
+# academy-enrollment-admin
 
 수학학원 "한빛수학" 어드민 — 원장(신청 승인·학생·반·강사·회계·직원·기록)과 강사(내 스케줄·출결·성적·보강). Next.js 16 + Tailwind 4.
 
