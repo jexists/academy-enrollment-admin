@@ -1,31 +1,43 @@
-'use client';
+"use client";
 
-import { useState, type FormEvent } from 'react';
-import { Button } from '@/components/ui/Button';
-import { FilterChips } from '@/components/ui/FilterChips';
-import { Modal } from '@/components/ui/Modal';
-import { SegmentedControl } from '@/components/ui/SegmentedControl';
-import { Select } from '@/components/ui/Select';
-import { StatusBadge } from '@/components/ui/StatusBadge';
-import { Tabs } from '@/components/ui/Tabs';
-import { TextArea } from '@/components/ui/TextArea';
-import { TextField } from '@/components/ui/TextField';
-import { useToast } from '@/components/ui/Toast';
-import { EmptyState, Skeleton } from '@/components/ui/states';
-import { IssuedPasswords, type Issued } from '@/features/common/IssuedPasswords';
-import { ApiError, errorMessage } from '@/lib/api';
-import { useApi, useMutate } from '@/lib/use-api';
-import { NOTE_CATEGORIES, type School, type StudentDetail } from './types';
+import { useState, type FormEvent } from "react";
+import { Button } from "@/components/ui/Button";
+import { FilterChips } from "@/components/ui/FilterChips";
+import { Modal } from "@/components/ui/Modal";
+import { SegmentedControl } from "@/components/ui/SegmentedControl";
+import { Select } from "@/components/ui/Select";
+import { StatusBadge } from "@/components/ui/StatusBadge";
+import { Tabs } from "@/components/ui/Tabs";
+import { TextArea } from "@/components/ui/TextArea";
+import { TextField } from "@/components/ui/TextField";
+import { useToast } from "@/components/ui/Toast";
+import { EmptyState, Skeleton } from "@/components/ui/states";
+import {
+  IssuedPasswords,
+  type Issued,
+} from "@/features/common/IssuedPasswords";
+import { ApiError, errorMessage } from "@/lib/api";
+import { useApi, useMutate } from "@/lib/use-api";
+import { NOTE_CATEGORIES, type School, type StudentDetail } from "./types";
 
-type Tab = 'basic' | 'history' | 'enroll' | 'attendance' | 'scores' | 'notes';
-type Dialog = 'school' | 'grade' | 'note' | null;
+type Tab = "basic" | "history" | "enroll" | "attendance" | "scores" | "notes";
+type Dialog = "school" | "grade" | "note" | null;
 
-const today = () => new Date(Date.now() + 9 * 3600_000).toISOString().slice(0, 10);
+const today = () =>
+  new Date(Date.now() + 9 * 3600_000).toISOString().slice(0, 10);
 
 /** 학생 상세 — final/screens/a-students 오른쪽. 탭: 기본 · 학적 이력 · 상담·메모 */
-export function StudentDetailPanel({ studentId, onChanged }: { studentId: number; onChanged: () => void }) {
-  const { data, error, setData } = useApi<StudentDetail>(`/admin/students/${studentId}`);
-  const [tab, setTab] = useState<Tab>('basic');
+export function StudentDetailPanel({
+  studentId,
+  onChanged,
+}: {
+  studentId: number;
+  onChanged: () => void;
+}) {
+  const { data, error, setData } = useApi<StudentDetail>(
+    `/admin/students/${studentId}`,
+  );
+  const [tab, setTab] = useState<Tab>("basic");
   const [dialog, setDialog] = useState<Dialog>(null);
   const [issued, setIssued] = useState<Issued[] | null>(null);
   const mutate = useMutate();
@@ -61,10 +73,10 @@ export function StudentDetailPanel({ studentId, onChanged }: { studentId: number
             className="ml-auto"
             onClick={async () => {
               try {
-                const result = await mutate<{ email: string; password: string }>(
-                  `/admin/students/${data.id}/reset-password`,
-                  'POST',
-                );
+                const result = await mutate<{
+                  email: string;
+                  password: string;
+                }>(`/admin/students/${data.id}/reset-password`, "POST");
                 setIssued([{ name: data.name, ...result }]);
               } catch (reason) {
                 toast.error(errorMessage(reason));
@@ -75,60 +87,91 @@ export function StudentDetailPanel({ studentId, onChanged }: { studentId: number
           </Button>
         </div>
         <p className="text-body-sm text-muted">
-          {data.gradeLabel} · {data.schoolName ?? '학교 없음'} · {data.birthDate} ({data.age}세)
+          {data.gradeLabel} · {data.schoolName ?? "학교 없음"} ·{" "}
+          {data.birthDate} ({data.age}세)
         </p>
         <p className="text-meta text-subtle">
-          입학일자 {data.enteredOn ?? '—'} 기준으로 학년을 계산해요 · {data.familyName} {data.siblingOrder}번째
-          {data.siblingOrder >= 2 && <span className="ml-1 text-primary">형제 할인 10%</span>}
+          입학일자 {data.enteredOn ?? "—"} 기준으로 학년을 계산해요 ·{" "}
+          {data.familyName} {data.siblingOrder}번째
+          {data.siblingOrder >= 2 && (
+            <span className="ml-1 text-primary">형제 할인 10%</span>
+          )}
         </p>
       </header>
 
       <Tabs
         tabs={[
-          { value: 'basic', label: '기본' },
-          { value: 'history', label: '학적 이력' },
-          { value: 'enroll', label: '수강' },
-          { value: 'attendance', label: '출결' },
-          { value: 'scores', label: '성적' },
-          { value: 'notes', label: `상담·메모 ${data.notes.length}` },
+          { value: "basic", label: "기본" },
+          { value: "history", label: "학적 이력" },
+          { value: "enroll", label: "수강" },
+          { value: "attendance", label: "출결" },
+          { value: "scores", label: "성적" },
+          { value: "notes", label: `상담·메모 ${data.notes.length}` },
         ]}
         value={tab}
         onChange={setTab}
       />
 
-      {tab === 'basic' && <BasicTab data={data} />}
-      {tab === 'history' && <HistoryTab data={data} onOpen={setDialog} />}
-      {tab === 'enroll' && <EnrollTab data={data} />}
-      {tab === 'attendance' && <AttendanceTab studentId={data.id} />}
-      {tab === 'scores' && <ScoresTab studentId={data.id} />}
-      {tab === 'notes' && <NotesTab data={data} onOpen={() => setDialog('note')} onDeleted={async (noteId) => {
-        try {
-          await mutate(`/admin/notes/${noteId}`, 'DELETE');
-          toast.success('메모를 지웠어요. 변경 기록에서 되살릴 수 있어요');
-          setData({ ...data, notes: data.notes.filter((n) => n.id !== noteId) });
-        } catch (reason) {
-          toast.error(errorMessage(reason));
-        }
-      }} />}
+      {tab === "basic" && <BasicTab data={data} />}
+      {tab === "history" && <HistoryTab data={data} onOpen={setDialog} />}
+      {tab === "enroll" && <EnrollTab data={data} />}
+      {tab === "attendance" && <AttendanceTab studentId={data.id} />}
+      {tab === "scores" && <ScoresTab studentId={data.id} />}
+      {tab === "notes" && (
+        <NotesTab
+          data={data}
+          onOpen={() => setDialog("note")}
+          onDeleted={async (noteId) => {
+            try {
+              await mutate(`/admin/notes/${noteId}`, "DELETE");
+              toast.success("메모를 지웠어요. 변경 기록에서 되살릴 수 있어요");
+              setData({
+                ...data,
+                notes: data.notes.filter((n) => n.id !== noteId),
+              });
+            } catch (reason) {
+              toast.error(errorMessage(reason));
+            }
+          }}
+        />
+      )}
 
       <SchoolChangeDialog
-        open={dialog === 'school'}
+        open={dialog === "school"}
         onClose={() => setDialog(null)}
-        submit={(body) => mutate<StudentDetail>(`/admin/students/${data.id}/school-history`, 'POST', body)}
-        onDone={(next) => updated(next, '학적 이력을 추가했어요')}
+        submit={(body) =>
+          mutate<StudentDetail>(
+            `/admin/students/${data.id}/school-history`,
+            "POST",
+            body,
+          )
+        }
+        onDone={(next) => updated(next, "학적 이력을 추가했어요")}
       />
       <GradeDialog
-        open={dialog === 'grade'}
+        open={dialog === "grade"}
         onClose={() => setDialog(null)}
-        submit={(body) => mutate<StudentDetail>(`/admin/students/${data.id}/grade-adjustments`, 'POST', body)}
-        onDone={(next) => updated(next, '학년 보정을 저장했어요')}
+        submit={(body) =>
+          mutate<StudentDetail>(
+            `/admin/students/${data.id}/grade-adjustments`,
+            "POST",
+            body,
+          )
+        }
+        onDone={(next) => updated(next, "학년 보정을 저장했어요")}
       />
       <NoteDialog
-        open={dialog === 'note'}
+        open={dialog === "note"}
         data={data}
         onClose={() => setDialog(null)}
-        submit={(body) => mutate<StudentDetail>(`/admin/students/${data.id}/notes`, 'POST', body)}
-        onDone={(next) => updated(next, '메모를 저장했어요')}
+        submit={(body) =>
+          mutate<StudentDetail>(
+            `/admin/students/${data.id}/notes`,
+            "POST",
+            body,
+          )
+        }
+        onDone={(next) => updated(next, "메모를 저장했어요")}
       />
       <IssuedPasswords
         open={issued !== null}
@@ -150,48 +193,81 @@ function BasicTab({ data }: { data: StudentDetail }) {
         <h3 className="text-sec">보호자</h3>
         <ul className="flex flex-col divide-y divide-line">
           {data.guardians.map((g) => (
-            <li key={g.id} className="flex min-h-12 items-center gap-3 text-body-sm">
+            <li
+              key={g.id}
+              className="flex min-h-12 items-center gap-3 text-body-sm"
+            >
               <span className="w-6 text-muted">{g.relation}</span>
               <span className="w-20 font-medium">{g.name}</span>
               <span className="w-32 tabular-nums text-muted">{g.phone}</span>
-              <span className="flex-1 truncate text-muted">{g.email ?? '이메일 없음'}</span>
-              {g.email ? <StatusBadge status="계정 있음" tone="ok" /> : <StatusBadge status="연락처만" tone="gray" />}
+              <span className="flex-1 truncate text-muted">
+                {g.email ?? "이메일 없음"}
+              </span>
+              {g.email ? (
+                <StatusBadge status="계정 있음" tone="ok" />
+              ) : (
+                <StatusBadge status="연락처만" tone="gray" />
+              )}
             </li>
           ))}
         </ul>
       </section>
       <section className="flex flex-col gap-2">
         <h3 className="text-sec">학생 계정</h3>
-        <p className="text-body-sm text-muted">{data.email} · 등록일 {data.registeredAt}</p>
+        <p className="text-body-sm text-muted">
+          {data.email} · 등록일 {data.registeredAt}
+        </p>
       </section>
       {data.siblings.length > 0 && (
         <section className="flex flex-col gap-2">
           <h3 className="text-sec">형제</h3>
-          <p className="text-body-sm text-muted">{data.siblings.map((s) => s.name).join(', ')}</p>
+          <p className="text-body-sm text-muted">
+            {data.siblings.map((s) => s.name).join(", ")}
+          </p>
         </section>
       )}
     </div>
   );
 }
 
-function HistoryTab({ data, onOpen }: { data: StudentDetail; onOpen: (d: Dialog) => void }) {
+function HistoryTab({
+  data,
+  onOpen,
+}: {
+  data: StudentDetail;
+  onOpen: (d: Dialog) => void;
+}) {
   return (
     <div className="flex flex-col gap-8">
       <section className="flex flex-col gap-2">
         <div className="flex items-center">
           <h3 className="flex-1 text-sec">학적 이력</h3>
-          <Button variant="secondary" size="sm" onClick={() => onOpen('school')}>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => onOpen("school")}
+          >
             학교 변경
           </Button>
         </div>
         <ol className="flex flex-col divide-y divide-line">
           {data.history.map((h) => (
-            <li key={h.id} className="flex min-h-12 items-center gap-3 py-2 text-body-sm">
-              <span className="w-24 tabular-nums text-muted">{h.effectiveFrom}</span>
-              <StatusBadge status={h.changeType} tone={h.changeType === '처음등록' ? 'gray' : 'info'} />
+            <li
+              key={h.id}
+              className="flex min-h-12 items-center gap-3 py-2 text-body-sm"
+            >
+              <span className="w-24 tabular-nums text-muted">
+                {h.effectiveFrom}
+              </span>
+              <StatusBadge
+                status={h.changeType}
+                tone={h.changeType === "처음등록" ? "gray" : "info"}
+              />
               <span className="font-medium">{h.schoolName}</span>
               <span className="text-meta text-subtle">{h.region}</span>
-              <span className="flex-1 text-right text-meta text-muted">{h.memo}</span>
+              <span className="flex-1 text-right text-meta text-muted">
+                {h.memo}
+              </span>
             </li>
           ))}
         </ol>
@@ -199,18 +275,27 @@ function HistoryTab({ data, onOpen }: { data: StudentDetail; onOpen: (d: Dialog)
       <section className="flex flex-col gap-2">
         <div className="flex items-center">
           <h3 className="flex-1 text-sec">학년 보정</h3>
-          <Button variant="secondary" size="sm" onClick={() => onOpen('grade')}>
+          <Button variant="secondary" size="sm" onClick={() => onOpen("grade")}>
             보정 추가
           </Button>
         </div>
         {data.adjustments.length === 0 ? (
-          <p className="text-body-sm text-subtle">보정 없음 — 입학일자로 계산한 학년 그대로예요.</p>
+          <p className="text-body-sm text-subtle">
+            보정 없음 — 입학일자로 계산한 학년 그대로예요.
+          </p>
         ) : (
           <ul className="flex flex-col divide-y divide-line">
             {data.adjustments.map((a) => (
-              <li key={a.id} className="flex min-h-12 items-center gap-3 text-body-sm">
-                <span className="w-24 tabular-nums text-muted">{a.effectiveFrom}</span>
-                <span className="w-10 font-bold tabular-nums">{a.delta > 0 ? `+${a.delta}` : a.delta}</span>
+              <li
+                key={a.id}
+                className="flex min-h-12 items-center gap-3 text-body-sm"
+              >
+                <span className="w-24 tabular-nums text-muted">
+                  {a.effectiveFrom}
+                </span>
+                <span className="w-10 font-bold tabular-nums">
+                  {a.delta > 0 ? `+${a.delta}` : a.delta}
+                </span>
                 <span className="flex-1">{a.reason}</span>
                 <span className="text-meta text-subtle">{a.staffName}</span>
               </li>
@@ -222,14 +307,28 @@ function HistoryTab({ data, onOpen }: { data: StudentDetail; onOpen: (d: Dialog)
   );
 }
 
-function NotesTab({ data, onOpen, onDeleted }: { data: StudentDetail; onOpen: () => void; onDeleted: (noteId: number) => void }) {
-  const [category, setCategory] = useState<string>('전체');
-  const rows = category === '전체' ? data.notes : data.notes.filter((n) => n.category === category);
+function NotesTab({
+  data,
+  onOpen,
+  onDeleted,
+}: {
+  data: StudentDetail;
+  onOpen: () => void;
+  onDeleted: (noteId: number) => void;
+}) {
+  const [category, setCategory] = useState<string>("전체");
+  const rows =
+    category === "전체"
+      ? data.notes
+      : data.notes.filter((n) => n.category === category);
   return (
     <section className="flex flex-col gap-3">
       <div className="flex items-center gap-3">
         <FilterChips
-          options={['전체', ...NOTE_CATEGORIES].map((c) => ({ value: c, label: c }))}
+          options={["전체", ...NOTE_CATEGORIES].map((c) => ({
+            value: c,
+            label: c,
+          }))}
           value={category}
           onChange={setCategory}
           className="flex-1"
@@ -238,19 +337,29 @@ function NotesTab({ data, onOpen, onDeleted }: { data: StudentDetail; onOpen: ()
           메모 추가
         </Button>
       </div>
-      <p className="text-meta text-subtle">내부용 — 학부모와 학생에게는 안 보여요.</p>
+      <p className="text-meta text-subtle">
+        내부용 — 학부모와 학생에게는 안 보여요.
+      </p>
       {rows.length === 0 ? (
         <EmptyState message="메모가 없어요." />
       ) : (
         <ul className="flex flex-col divide-y divide-line">
           {rows.map((n) => (
             <li key={n.id} className="flex gap-3 py-3 text-body-sm">
-              <span className="w-20 shrink-0 tabular-nums text-muted">{n.notedOn}</span>
+              <span className="w-20 shrink-0 tabular-nums text-muted">
+                {n.notedOn}
+              </span>
               <span className="w-24 shrink-0 text-muted">{n.target}</span>
               <StatusBadge status={n.category} tone="info" />
               <span className="flex-1">{n.content}</span>
-              <span className="shrink-0 text-meta text-subtle">{n.authorName ?? '시스템'}</span>
-              <button type="button" className="shrink-0 text-meta text-subtle hover:text-err" onClick={() => onDeleted(n.id)}>
+              <span className="shrink-0 text-meta text-subtle">
+                {n.authorName ?? "시스템"}
+              </span>
+              <button
+                type="button"
+                className="shrink-0 text-meta text-subtle hover:text-err"
+                onClick={() => onDeleted(n.id)}
+              >
                 지우기
               </button>
             </li>
@@ -262,7 +371,10 @@ function NotesTab({ data, onOpen, onDeleted }: { data: StudentDetail; onOpen: ()
 }
 
 /** 서버 거절은 Toast, 칸 오류는 칸 아래 */
-function useFormSubmit<T>(submit: (body: unknown) => Promise<T>, onDone: (result: T) => void) {
+function useFormSubmit<T>(
+  submit: (body: unknown) => Promise<T>,
+  onDone: (result: T) => void,
+) {
   const toast = useToast();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
@@ -273,7 +385,11 @@ function useFormSubmit<T>(submit: (body: unknown) => Promise<T>, onDone: (result
     try {
       onDone(await submit(body));
     } catch (reason) {
-      if (reason instanceof ApiError && Object.keys(reason.fieldErrors).length > 0) setErrors(reason.fieldErrors);
+      if (
+        reason instanceof ApiError &&
+        Object.keys(reason.fieldErrors).length > 0
+      )
+        setErrors(reason.fieldErrors);
       else toast.error(errorMessage(reason));
     } finally {
       setBusy(false);
@@ -290,11 +406,17 @@ interface DialogProps {
 }
 
 function SchoolChangeDialog({ open, onClose, submit, onDone }: DialogProps) {
-  const { data: schools } = useApi<School[]>(open ? '/admin/schools' : null);
-  const [form, setForm] = useState({ schoolId: '', changeType: '전학' as '전학' | '진학', enteredOn: today(), effectiveFrom: today(), memo: '' });
+  const { data: schools } = useApi<School[]>(open ? "/admin/schools" : null);
+  const [form, setForm] = useState({
+    schoolId: "",
+    changeType: "전학" as "전학" | "진학",
+    enteredOn: today(),
+    effectiveFrom: today(),
+    memo: "",
+  });
   const { errors, busy, run } = useFormSubmit(submit, onDone);
   const options = (schools ?? [])
-    .filter((s) => (form.changeType === '진학' ? s.level === '고' : true))
+    .filter((s) => (form.changeType === "진학" ? s.level === "고" : true))
     .map((s) => ({ value: s.id, label: `${s.name} · ${s.region}` }));
   return (
     <Modal
@@ -320,11 +442,13 @@ function SchoolChangeDialog({ open, onClose, submit, onDone }: DialogProps) {
         <SegmentedControl
           label="변경 종류"
           options={[
-            { value: '전학', label: '전학' },
-            { value: '진학', label: '진학 (중→고)' },
+            { value: "전학", label: "전학" },
+            { value: "진학", label: "진학 (중→고)" },
           ]}
           value={form.changeType}
-          onChange={(changeType) => setForm({ ...form, changeType, schoolId: '' })}
+          onChange={(changeType) =>
+            setForm({ ...form, changeType, schoolId: "" })
+          }
         />
         <Select
           label="새 학교"
@@ -340,25 +464,40 @@ function SchoolChangeDialog({ open, onClose, submit, onDone }: DialogProps) {
             type="date"
             value={form.enteredOn}
             onChange={(e) => setForm({ ...form, enteredOn: e.target.value })}
-            hint={form.changeType === '전학' ? '전학은 원래 입학일 그대로' : '고등학교 입학일'}
+            hint={
+              form.changeType === "전학"
+                ? "전학은 원래 입학일 그대로"
+                : "고등학교 입학일"
+            }
             error={errors.enteredOn}
           />
           <TextField
             label="바뀐 날"
             type="date"
             value={form.effectiveFrom}
-            onChange={(e) => setForm({ ...form, effectiveFrom: e.target.value })}
+            onChange={(e) =>
+              setForm({ ...form, effectiveFrom: e.target.value })
+            }
             error={errors.effectiveFrom}
           />
         </div>
-        <TextField label="메모 (선택)" placeholder="예: 이사로 전학" value={form.memo} onChange={(e) => setForm({ ...form, memo: e.target.value })} />
+        <TextField
+          label="메모 (선택)"
+          placeholder="예: 이사로 전학"
+          value={form.memo}
+          onChange={(e) => setForm({ ...form, memo: e.target.value })}
+        />
       </form>
     </Modal>
   );
 }
 
 function GradeDialog({ open, onClose, submit, onDone }: DialogProps) {
-  const [form, setForm] = useState({ delta: '-1', reason: '', effectiveFrom: today() });
+  const [form, setForm] = useState({
+    delta: "-1",
+    reason: "",
+    effectiveFrom: today(),
+  });
   const { errors, busy, run } = useFormSubmit(submit, onDone);
   return (
     <Modal
@@ -376,28 +515,58 @@ function GradeDialog({ open, onClose, submit, onDone }: DialogProps) {
         </>
       }
     >
-      <p className="mb-4">유급·휴학·조기 진급처럼 입학일자로 계산한 학년과 다를 때만 넣어요.</p>
-      <form id="grade-adjust" className="flex flex-col gap-4" onSubmit={(e) => run(e, { ...form, delta: Number(form.delta) })}>
+      <p className="mb-4">
+        유급·휴학·조기 진급처럼 입학일자로 계산한 학년과 다를 때만 넣어요.
+      </p>
+      <form
+        id="grade-adjust"
+        className="flex flex-col gap-4"
+        onSubmit={(e) => run(e, { ...form, delta: Number(form.delta) })}
+      >
         <SegmentedControl
           label="보정"
           options={[
-            { value: '-1', label: '−1 (한 학년 아래)' },
-            { value: '1', label: '+1 (한 학년 위)' },
+            { value: "-1", label: "−1 (한 학년 아래)" },
+            { value: "1", label: "+1 (한 학년 위)" },
           ]}
           value={form.delta}
           onChange={(delta) => setForm({ ...form, delta })}
         />
-        <TextField label="사유" placeholder="예: 휴학 후 복학" value={form.reason} onChange={(e) => setForm({ ...form, reason: e.target.value })} error={errors.reason} />
-        <TextField label="적용일" type="date" value={form.effectiveFrom} onChange={(e) => setForm({ ...form, effectiveFrom: e.target.value })} error={errors.effectiveFrom} />
+        <TextField
+          label="사유"
+          placeholder="예: 휴학 후 복학"
+          value={form.reason}
+          onChange={(e) => setForm({ ...form, reason: e.target.value })}
+          error={errors.reason}
+        />
+        <TextField
+          label="적용일"
+          type="date"
+          value={form.effectiveFrom}
+          onChange={(e) => setForm({ ...form, effectiveFrom: e.target.value })}
+          error={errors.effectiveFrom}
+        />
       </form>
     </Modal>
   );
 }
 
-function NoteDialog({ open, onClose, submit, onDone, data }: DialogProps & { data: StudentDetail }) {
-  const [form, setForm] = useState({ target: 'student', parentProfileId: '', category: '상담', notedOn: today(), content: '' });
+function NoteDialog({
+  open,
+  onClose,
+  submit,
+  onDone,
+  data,
+}: DialogProps & { data: StudentDetail }) {
+  const [form, setForm] = useState({
+    target: "student",
+    parentProfileId: "",
+    category: "상담",
+    notedOn: today(),
+    content: "",
+  });
   const { errors, busy, run } = useFormSubmit(submit, (next: StudentDetail) => {
-    setForm((f) => ({ ...f, content: '' }));
+    setForm((f) => ({ ...f, content: "" }));
     onDone(next);
   });
   return (
@@ -420,26 +589,36 @@ function NoteDialog({ open, onClose, submit, onDone, data }: DialogProps & { dat
         id="note-add"
         className="flex flex-col gap-4"
         onSubmit={(e) =>
-          run(e, { ...form, parentProfileId: form.parentProfileId ? Number(form.parentProfileId) : undefined })
+          run(e, {
+            ...form,
+            parentProfileId: form.parentProfileId
+              ? Number(form.parentProfileId)
+              : undefined,
+          })
         }
       >
         <SegmentedControl
           label="대상"
           options={[
-            { value: 'student', label: data.name },
-            { value: 'parent', label: '보호자' },
-            { value: 'family', label: '가족' },
+            { value: "student", label: data.name },
+            { value: "parent", label: "보호자" },
+            { value: "family", label: "가족" },
           ]}
           value={form.target}
           onChange={(target) => setForm({ ...form, target })}
         />
-        {form.target === 'parent' && (
+        {form.target === "parent" && (
           <Select
             label="보호자"
             placeholder="보호자 고르기"
-            options={data.guardians.map((g) => ({ value: g.id, label: `${g.name} (${g.relation})` }))}
+            options={data.guardians.map((g) => ({
+              value: g.id,
+              label: `${g.name} (${g.relation})`,
+            }))}
             value={form.parentProfileId}
-            onChange={(e) => setForm({ ...form, parentProfileId: e.target.value })}
+            onChange={(e) =>
+              setForm({ ...form, parentProfileId: e.target.value })
+            }
           />
         )}
         <div className="grid grid-cols-2 gap-3">
@@ -449,27 +628,43 @@ function NoteDialog({ open, onClose, submit, onDone, data }: DialogProps & { dat
             value={form.category}
             onChange={(e) => setForm({ ...form, category: e.target.value })}
           />
-          <TextField label="날짜" type="date" value={form.notedOn} onChange={(e) => setForm({ ...form, notedOn: e.target.value })} />
+          <TextField
+            label="날짜"
+            type="date"
+            value={form.notedOn}
+            onChange={(e) => setForm({ ...form, notedOn: e.target.value })}
+          />
         </div>
-        <TextArea label="내용" value={form.content} onChange={(e) => setForm({ ...form, content: e.target.value })} error={errors.content} />
+        <TextArea
+          label="내용"
+          value={form.content}
+          onChange={(e) => setForm({ ...form, content: e.target.value })}
+          error={errors.content}
+        />
       </form>
     </Modal>
   );
 }
 
 function EnrollTab({ data }: { data: StudentDetail }) {
-  if (data.enrollments.length === 0) return <EmptyState message="수강 기록이 없어요." />;
+  if (data.enrollments.length === 0)
+    return <EmptyState message="수강 기록이 없어요." />;
   return (
     <ul className="flex flex-col divide-y divide-line">
       {data.enrollments.map((e) => (
-        <li key={e.id} className="flex min-h-12 items-center gap-3 text-body-sm">
+        <li
+          key={e.id}
+          className="flex min-h-12 items-center gap-3 text-body-sm"
+        >
           <StatusBadge status={e.status} />
           <span className="w-28 font-medium">{e.className}</span>
           <span className="flex-1 text-muted">{e.teacherName}</span>
           <span className="tabular-nums text-meta text-subtle">
             {e.startDate}
-            {e.endDate ? ` ~ ${e.endDate}` : ''}
-            {e.refundAmount !== null ? ` · 환불 ${e.refundAmount.toLocaleString('ko-KR')}원` : ''}
+            {e.endDate ? ` ~ ${e.endDate}` : ""}
+            {e.refundAmount !== null
+              ? ` · 환불 ${e.refundAmount.toLocaleString("ko-KR")}원`
+              : ""}
           </span>
         </li>
       ))}
@@ -478,24 +673,51 @@ function EnrollTab({ data }: { data: StudentDetail }) {
 }
 
 function AttendanceTab({ studentId }: { studentId: number }) {
-  const { data } = useApi<{ month: string; 출석: number; 지각: number; 결석: number; rate: number | null; convertedAbsence: number; records: { date: string; className: string; status: string; attendType: string; lateMinutes: number | null }[] }>(
-    `/admin/students/${studentId}/attendance`,
-  );
+  const { data } = useApi<{
+    month: string;
+    출석: number;
+    지각: number;
+    결석: number;
+    rate: number | null;
+    convertedAbsence: number;
+    records: {
+      date: string;
+      className: string;
+      status: string;
+      attendType: string;
+      lateMinutes: number | null;
+    }[];
+  }>(`/admin/students/${studentId}/attendance`);
   if (!data) return <Skeleton className="h-32" />;
   return (
     <div className="flex flex-col gap-3">
       <p className="text-body-sm text-muted">
-        {data.month.replace('-', '년 ')}월 · 출석률 <b className="text-fg">{data.rate === null ? '—' : `${data.rate}%`}</b> · 출석 {data.출석} · 지각 {data.지각} · 결석 {data.결석} (환산 결석 {data.convertedAbsence}회)
+        {data.month.replace("-", "년 ")}월 · 출석률{" "}
+        <b className="text-fg">{data.rate === null ? "—" : `${data.rate}%`}</b>{" "}
+        · 출석 {data.출석} · 지각 {data.지각} · 결석 {data.결석} (환산 결석{" "}
+        {data.convertedAbsence}회)
       </p>
       {data.records.length === 0 ? (
         <EmptyState message="이번 달 출결이 없어요." />
       ) : (
         <ul className="flex flex-col divide-y divide-line">
           {data.records.map((r, i) => (
-            <li key={i} className="flex min-h-11 items-center gap-3 text-body-sm">
-              <span className="w-16 tabular-nums text-muted">{r.date.slice(5)}</span>
-              <span className="flex-1">{r.className}{r.attendType === '보강' && <span className="ml-1 text-meta text-info">보강</span>}</span>
-              {r.lateMinutes ? <span className="text-meta text-warn">{r.lateMinutes}분</span> : null}
+            <li
+              key={i}
+              className="flex min-h-11 items-center gap-3 text-body-sm"
+            >
+              <span className="w-16 tabular-nums text-muted">
+                {r.date.slice(5)}
+              </span>
+              <span className="flex-1">
+                {r.className}
+                {r.attendType === "보강" && (
+                  <span className="ml-1 text-meta text-info">보강</span>
+                )}
+              </span>
+              {r.lateMinutes ? (
+                <span className="text-meta text-warn">{r.lateMinutes}분</span>
+              ) : null}
               <StatusBadge status={r.status} />
             </li>
           ))}
@@ -506,19 +728,53 @@ function AttendanceTab({ studentId }: { studentId: number }) {
 }
 
 function ScoresTab({ studentId }: { studentId: number }) {
-  const { data } = useApi<{ scores: { id: number; examName: string; examDate: string; score: number; diff: number | null }[]; average: number | null }>(`/admin/students/${studentId}/scores`);
+  const { data } = useApi<{
+    scores: {
+      id: number;
+      examName: string;
+      examDate: string;
+      score: number;
+      diff: number | null;
+    }[];
+    average: number | null;
+  }>(`/admin/students/${studentId}/scores`);
   if (!data) return <Skeleton className="h-32" />;
-  if (data.scores.length === 0) return <EmptyState message="성적이 없어요. 성적 입력에서 넣을 수 있어요." />;
+  if (data.scores.length === 0)
+    return (
+      <EmptyState message="성적이 없어요. 성적 입력에서 넣을 수 있어요." />
+    );
   return (
     <div className="flex flex-col gap-3">
-      <p className="text-body-sm text-muted">평균 <b className="text-fg">{data.average}점</b> · {data.scores.length}회</p>
+      <p className="text-body-sm text-muted">
+        평균 <b className="text-fg">{data.average}점</b> · {data.scores.length}
+        회
+      </p>
       <ul className="flex flex-col divide-y divide-line">
         {data.scores.map((s) => (
-          <li key={s.id} className="flex min-h-11 items-center gap-3 text-body-sm">
+          <li
+            key={s.id}
+            className="flex min-h-11 items-center gap-3 text-body-sm"
+          >
             <span className="w-24 tabular-nums text-muted">{s.examDate}</span>
             <span className="flex-1 font-medium">{s.examName}</span>
-            <span className={s.diff === null ? 'text-subtle' : s.diff >= 0 ? 'text-ok' : 'text-err'}>{s.diff === null ? '—' : s.diff >= 0 ? `▲ ${s.diff}` : `▼ ${-s.diff}`}</span>
-            <span className="w-12 text-right font-bold tabular-nums">{s.score}점</span>
+            <span
+              className={
+                s.diff === null
+                  ? "text-subtle"
+                  : s.diff >= 0
+                    ? "text-ok"
+                    : "text-err"
+              }
+            >
+              {s.diff === null
+                ? "—"
+                : s.diff >= 0
+                  ? `▲ ${s.diff}`
+                  : `▼ ${-s.diff}`}
+            </span>
+            <span className="w-12 text-right font-bold tabular-nums">
+              {s.score}점
+            </span>
           </li>
         ))}
       </ul>

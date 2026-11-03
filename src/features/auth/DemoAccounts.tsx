@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { StatusBadge } from '@/components/ui/StatusBadge';
-import { api } from '@/lib/api';
-import { ROLE_LABEL, type Role } from '@/lib/auth-storage';
-import { cn } from '@/lib/cn';
+import { useEffect, useState } from "react";
+import { StatusBadge } from "@/components/ui/StatusBadge";
+import { api } from "@/lib/api";
+import { ROLE_LABEL, type Role } from "@/lib/auth-storage";
+import { cn } from "@/lib/cn";
 
 interface DemoAccount {
   email: string;
@@ -23,14 +23,14 @@ export function DemoAccounts({
   onPick,
   disabled,
 }: {
-  app: 'web' | 'admin';
+  app: "web" | "admin";
   onPick: (email: string) => void;
   disabled?: boolean;
 }) {
   const [accounts, setAccounts] = useState<DemoAccount[]>([]);
 
   useEffect(() => {
-    api<DemoAccount[]>('/auth/demo-accounts', { query: { app } })
+    api<DemoAccount[]>("/auth/demo-accounts", { query: { app } })
       .then(setAccounts)
       .catch(() => setAccounts([]));
   }, [app]);
@@ -38,7 +38,9 @@ export function DemoAccounts({
   if (accounts.length === 0) return null;
   return (
     <section className="flex flex-col gap-2 border-t border-line pt-6">
-      <h2 className="text-meta font-medium text-subtle">로컬 데모 계정 — 누르면 바로 로그인해요</h2>
+      <h2 className="text-meta font-medium text-subtle">
+        로컬 데모 계정 — 누르면 바로 로그인해요
+      </h2>
       <ul className="flex flex-col">
         {accounts.map((account) => (
           <li key={account.email}>
@@ -47,15 +49,23 @@ export function DemoAccounts({
               disabled={disabled}
               onClick={() => onPick(account.email)}
               className={cn(
-                'flex min-h-11 w-full items-center gap-2 rounded-control px-2 text-left hover:bg-s1',
-                'disabled:cursor-not-allowed disabled:opacity-40',
+                "flex min-h-11 w-full items-center gap-2 rounded-control px-2 text-left hover:bg-s1",
+                "disabled:cursor-not-allowed disabled:opacity-40",
               )}
             >
-              <span className="w-10 text-meta text-muted">{ROLE_LABEL[account.role]}</span>
-              <span className="text-body-sm font-medium text-fg">{account.name}</span>
-              <span className="flex-1 truncate text-meta text-subtle">{account.email}</span>
+              <span className="w-10 text-meta text-muted">
+                {ROLE_LABEL[account.role]}
+              </span>
+              <span className="text-body-sm font-medium text-fg">
+                {account.name}
+              </span>
+              <span className="flex-1 truncate text-meta text-subtle">
+                {account.email}
+              </span>
               {!account.isActive && <StatusBadge status="중지" />}
-              {account.mustChangePassword && <StatusBadge status="비번 변경 필요" />}
+              {account.mustChangePassword && (
+                <StatusBadge status="비번 변경 필요" />
+              )}
             </button>
           </li>
         ))}

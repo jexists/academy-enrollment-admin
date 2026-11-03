@@ -10,6 +10,8 @@
   --color-primary-hover: #eb5600;
   --color-primary-c: #fcf5f1;
   --color-canvas: #ffffff;
+  /* 어드민 바탕 (흰 카드 아래 아주 옅은 회색) */
+  --color-page: #f7f7f8;
   --color-fg: #0c0c0c;
   --color-muted: rgba(55, 55, 55, 0.8);
   --color-subtle: #949494;
@@ -70,6 +72,14 @@
     from { opacity: 0; transform: translateY(16px); }
     to { opacity: 1; transform: translateY(0); }
   }
+}
+
+ /* 흰 카드 — 파이널 와이어프레임의 묶음 상자 (components/ui/Panel과 같은 모양) */
+@utility card {
+  border-radius: var(--radius-modal);
+  border: 1px solid var(--color-line);
+  background: var(--color-canvas);
+  padding: 1.25rem;
 }
 
 :root {
