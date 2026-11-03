@@ -14,7 +14,7 @@ import { navFor } from "./admin-nav";
 export function AdminShell({ children }: { children: ReactNode }) {
   return (
     <RequireAuth roles={["ADMIN", "TEACHER"]}>
-      <div className="flex min-h-full bg-page">
+      <div className="flex min-h-full bg-backdrop">
         <Sidebar />
         <div className="flex min-w-0 flex-1 flex-col">
           <TopBar />
