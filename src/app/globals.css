@@ -67,6 +67,12 @@
     from { opacity: 0; transform: translateY(4px); }
     to { opacity: 1; transform: translateY(0); }
   }
+  /* 문의하기 답을 기다릴 때 점 3개가 차례로 튀는 모양 */
+  --animate-typing: typing 1.2s ease-in-out infinite;
+  @keyframes typing {
+    0%, 60%, 100% { opacity: 0.35; transform: translateY(0); }
+    30% { opacity: 1; transform: translateY(-3px); }
+  }
   --animate-sheet: sheet 200ms ease-out;
   @keyframes sheet {
     from { opacity: 0; transform: translateY(16px); }
