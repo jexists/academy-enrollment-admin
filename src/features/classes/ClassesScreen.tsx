@@ -317,12 +317,12 @@ function CapacityDialog({
       <form id="class-edit" onSubmit={submit} className="flex flex-col gap-4">
         <div className="grid grid-cols-2 gap-3">
           <TextField
-            label="정원"
+            label={`정원 (지금 ${current.enrolled}명 수강 중)`}
             type="number"
             min={1}
+            placeholder="8"
             value={form.capacity}
             onChange={(e) => setForm({ ...form, capacity: e.target.value })}
-            hint={`지금 ${current.enrolled}명 수강 중`}
             error={errors.capacity}
           />
           <TextField

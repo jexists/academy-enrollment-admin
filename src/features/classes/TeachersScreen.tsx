@@ -232,6 +232,7 @@ function AddTeacherDialog({
 
 const BIO_MAX = 300;
 const CAREER_MAX_LINES = 6;
+const CAREER_LINE_MAX = 60;
 
 /** 소개·이력 입력 (결정41). 이력은 한 줄에 하나 */
 function ProfileFields({
@@ -245,38 +246,34 @@ function ProfileFields({
   errors: Record<string, string>;
   onChange: (key: "bio" | "career", value: string) => void;
 }) {
-  const lines = career.split("\n").filter((l) => l.trim() !== "").length;
+  const lines = career.split("\n").filter((l) => l.trim() !== "");
+  // 넘쳤을 때만 칸 아래에 오류로 알린다 (저장하면 백엔드도 같은 기준으로 막는다)
+  const careerError =
+    errors.career ??
+    (lines.length > CAREER_MAX_LINES
+      ? `이력은 ${CAREER_MAX_LINES}줄까지 쓸 수 있어요. 지금 ${lines.length}줄이에요.`
+      : lines.some((l) => l.trim().length > CAREER_LINE_MAX)
+        ? `이력은 줄마다 ${CAREER_LINE_MAX}자까지 쓸 수 있어요.`
+        : undefined);
   return (
     <>
-      <div className="flex flex-col gap-1">
-        <TextArea
-          label="소개 (선택)"
-          rows={4}
-          maxLength={BIO_MAX}
-          placeholder="수업 방식과 맡은 학년을 2~3문장으로 써 주세요. 첫 문장이 카드에 보여요."
-          value={bio}
-          onChange={(e) => onChange("bio", e.target.value)}
-          error={errors.bio}
-        />
-        <p className="text-right text-meta tabular-nums text-subtle">
-          {bio.length} / {BIO_MAX}자
-        </p>
-      </div>
-      <div className="flex flex-col gap-1">
-        <TextArea
-          label="이력 (선택, 한 줄에 하나)"
-          rows={5}
-          placeholder={"새솔대학교 수학교육과 졸업\n중등 수학 강의 5년"}
-          value={career}
-          onChange={(e) => onChange("career", e.target.value)}
-          error={errors.career}
-        />
-        <p
-          className={`text-right text-meta tabular-nums ${lines > CAREER_MAX_LINES ? "text-err" : "text-subtle"}`}
-        >
-          {lines} / {CAREER_MAX_LINES}줄 · 줄마다 60자까지
-        </p>
-      </div>
+      <TextArea
+        label="소개 (선택)"
+        rows={4}
+        maxLength={BIO_MAX}
+        placeholder={`수업 방식과 맡은 학년을 2~3문장으로 (${BIO_MAX}자까지). 첫 문장이 카드에 보여요.`}
+        value={bio}
+        onChange={(e) => onChange("bio", e.target.value)}
+        error={errors.bio}
+      />
+      <TextArea
+        label="이력 (선택)"
+        rows={5}
+        placeholder={`한 줄에 하나, ${CAREER_MAX_LINES}줄까지\n예: 새솔대학교 수학교육과 졸업\n중등 수학 강의 5년`}
+        value={career}
+        onChange={(e) => onChange("career", e.target.value)}
+        error={careerError}
+      />
     </>
   );
 }

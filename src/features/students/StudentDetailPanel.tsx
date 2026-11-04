@@ -460,15 +460,14 @@ function SchoolChangeDialog({ open, onClose, submit, onDone }: DialogProps) {
         />
         <div className="grid grid-cols-2 gap-3">
           <TextField
-            label="입학일자"
+            label={
+              form.changeType === "전학"
+                ? "입학일자 (원래 입학일 그대로)"
+                : "입학일자 (고등학교 입학일)"
+            }
             type="date"
             value={form.enteredOn}
             onChange={(e) => setForm({ ...form, enteredOn: e.target.value })}
-            hint={
-              form.changeType === "전학"
-                ? "전학은 원래 입학일 그대로"
-                : "고등학교 입학일"
-            }
             error={errors.enteredOn}
           />
           <TextField

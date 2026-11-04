@@ -169,7 +169,7 @@ export function TimetableNewForm() {
                 min={1}
                 value={form.capacity}
                 onChange={set("capacity")}
-                hint="기본 8명"
+                placeholder="기본 8명"
                 error={errors.capacity}
               />
               <TextField

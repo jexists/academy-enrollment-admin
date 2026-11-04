@@ -1,16 +1,18 @@
 'use client';
 
-import { useId, type InputHTMLAttributes, type ReactNode } from 'react';
+import { useId, type InputHTMLAttributes } from 'react';
 import { cn } from '@/lib/cn';
 
 interface TextFieldProps extends InputHTMLAttributes<HTMLInputElement> {
   label: string;
-  hint?: ReactNode;
-  /** 입력 오류는 칸 아래 한 줄로만 보여 준다 (Toast로 같은 말을 또 띄우지 않는다) */
+  /**
+   * 입력 오류는 칸 아래 한 줄로만 보여 준다 (Toast로 같은 말을 또 띄우지 않는다).
+   * 설명은 칸 아래에 쓰지 않고 placeholder로 넣는다 — 칸 아래 글은 오류일 때만.
+   */
   error?: string;
 }
 
-export function TextField({ label, hint, error, id, className, ...props }: TextFieldProps) {
+export function TextField({ label, error, id, className, ...props }: TextFieldProps) {
   const autoId = useId();
   const inputId = id ?? autoId;
   const noteId = `${inputId}-note`;
@@ -22,7 +24,7 @@ export function TextField({ label, hint, error, id, className, ...props }: TextF
       <input
         id={inputId}
         aria-invalid={error ? true : undefined}
-        aria-describedby={error || hint ? noteId : undefined}
+        aria-describedby={error ? noteId : undefined}
         className={cn(
           'h-11 rounded-control border bg-canvas px-3 text-body text-fg placeholder:text-subtle',
           'focus:border-primary focus:outline-none disabled:bg-s1 disabled:text-subtle',
@@ -30,9 +32,9 @@ export function TextField({ label, hint, error, id, className, ...props }: TextF
         )}
         {...props}
       />
-      {(error || hint) && (
-        <p id={noteId} className={cn('text-meta', error ? 'text-err' : 'text-subtle')}>
-          {error ?? hint}
+      {error && (
+        <p id={noteId} className="text-meta text-err">
+          {error}
         </p>
       )}
     </div>

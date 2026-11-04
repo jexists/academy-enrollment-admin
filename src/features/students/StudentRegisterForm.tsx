@@ -157,16 +157,13 @@ export function StudentRegisterForm() {
             error={errors.schoolId}
           />
           <TextField
-            label="입학일자"
+            label={
+              grade ? `입학일자 · 현재 ${grade}` : "입학일자 (학년은 이걸로 계산)"
+            }
             type="date"
             value={form.enteredOn}
             onChange={set("enteredOn")}
             error={errors.enteredOn}
-            hint={
-              grade
-                ? `현재 학년: ${grade} (입학일자로 자동 계산)`
-                : "학교급에 입학한 날 — 학년은 이걸로 계산해요"
-            }
           />
         </div>
       </Section>
@@ -178,7 +175,7 @@ export function StudentRegisterForm() {
           value={form.email}
           onChange={set("email")}
           error={errors.email}
-          hint="등록하면 임시 비밀번호가 나와요. 학생이 첫 로그인 때 바꿔요."
+          placeholder="학생이 로그인할 이메일 · 등록하면 임시 비밀번호가 나와요"
         />
       </Section>
 

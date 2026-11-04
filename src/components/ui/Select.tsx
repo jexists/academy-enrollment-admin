@@ -8,11 +8,10 @@ interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   options: { value: string | number; label: string; disabled?: boolean }[];
   placeholder?: string;
   error?: string;
-  hint?: string;
 }
 
 /** 단일 선택. 브라우저 기본 select라 모바일에서는 OS 선택 창이 뜬다 */
-export function Select({ label, options, placeholder, error, hint, id, className, ...props }: SelectProps) {
+export function Select({ label, options, placeholder, error, id, className, ...props }: SelectProps) {
   const autoId = useId();
   const selectId = id ?? autoId;
   return (
@@ -36,7 +35,7 @@ export function Select({ label, options, placeholder, error, hint, id, className
           </option>
         ))}
       </select>
-      {(error || hint) && <p className={cn('text-meta', error ? 'text-err' : 'text-subtle')}>{error ?? hint}</p>}
+      {error && <p className="text-meta text-err">{error}</p>}
     </div>
   );
 }
