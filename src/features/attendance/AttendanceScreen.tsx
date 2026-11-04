@@ -223,7 +223,8 @@ export function AttendanceScreen() {
                     return (
                       <li
                         key={s.studentId}
-                        className="flex min-h-16 items-center gap-3 py-2"
+                        // 좁은 화면(태블릿)에서는 도착 시각 칸이 다음 줄로 내려가게 (QA BUG-027)
+                        className="flex min-h-16 flex-wrap items-center gap-3 py-2"
                       >
                         <div className="flex w-44 flex-col">
                           <span className="flex items-center gap-1.5 text-body font-medium">
