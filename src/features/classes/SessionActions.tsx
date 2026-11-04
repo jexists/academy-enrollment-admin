@@ -141,15 +141,22 @@ function SessionDialog({
         endTime: form.endTime,
         memo: form.memo || undefined,
       };
-      await submit(
+      const result = (await submit(
         cancelMode
           ? {
               memo: form.memo || undefined,
               replacement: withExtra === "yes" ? slot : undefined,
             }
           : slot,
+      )) as { rejectedMakeups?: number } | undefined;
+      const rejected = result?.rejectedMakeups ?? 0;
+      toast.success(
+        !cancelMode
+          ? "보충 수업을 추가했어요"
+          : rejected > 0
+            ? `휴강 처리했어요. 이 수업에 잡힌 보강 ${rejected}건은 거절로 바꿨어요`
+            : "휴강 처리했어요",
       );
-      toast.success(cancelMode ? "휴강 처리했어요" : "보충 수업을 추가했어요");
       setForm({ ...form, date: "", memo: "" });
       onDone();
     } catch (reason) {
