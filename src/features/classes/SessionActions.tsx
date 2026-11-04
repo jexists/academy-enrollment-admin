@@ -71,6 +71,8 @@ export function SessionActions({
       </p>
 
       <SessionDialog
+        // 고른 수업이 바뀌면 새로 그려서 보충 시간 기본값이 그 수업 시간이 되게 (QA BUG-018)
+        key={picked?.id ?? "none"}
         title={picked ? `${picked.date} 휴강 처리` : ""}
         open={picked !== null}
         cancelMode
