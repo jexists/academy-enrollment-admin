@@ -31,7 +31,7 @@ export function ClassesScreen() {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
-  const { data, error, reload } = useApi<ClassRow[]>("/admin/classes");
+  const { data, error, reload } = useApi<ClassRow[]>("/admin/classes", { inline: true });
   const [grade, setGrade] = useState<number>(0);
   const selected = Number(params.get("id")) || data?.[0]?.id || null;
   const rows = (data ?? []).filter((c) => !grade || c.targetGrade === grade);
@@ -116,8 +116,7 @@ function ClassDetailPanel({
 }) {
   const [month, setMonth] = useState(thisMonth());
   const { data, error, reload } = useApi<ClassDetail>(
-    `/admin/classes/${classId}?month=${month}`,
-  );
+    `/admin/classes/${classId}?month=${month}`, { inline: true });
   const [editing, setEditing] = useState(false);
   const [picked, setPicked] = useState<Session | null>(null);
   const mutate = useMutate();

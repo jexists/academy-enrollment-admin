@@ -20,7 +20,7 @@ import type { TeacherRow } from "./types";
 
 /** 강사 관리 — final/screens/a-teachers. 강사 = 직원 계정 + 강사 정보 1:1 */
 export function TeachersScreen() {
-  const { data, error, reload } = useApi<TeacherRow[]>("/admin/teachers");
+  const { data, error, reload } = useApi<TeacherRow[]>("/admin/teachers", { inline: true });
   const [open, setOpen] = useState(false);
   const [issued, setIssued] = useState<Issued[] | null>(null);
   const [editing, setEditing] = useState<TeacherRow | null>(null);

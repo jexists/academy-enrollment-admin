@@ -63,8 +63,7 @@ export function ChatLogsScreen() {
   const [filter, setFilter] = useState<Who>("all");
   const [selected, setSelected] = useState<number | null>(null);
   const { data, error } = useApi<ChatLogRow[]>(
-    `/admin/chat-logs?who=${filter}`,
-  );
+    `/admin/chat-logs?who=${filter}`, { inline: true });
   const current = data?.find((row) => row.id === selected) ?? null;
 
   return (

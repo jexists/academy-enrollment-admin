@@ -43,7 +43,7 @@ export async function api<T>(path: string, options: RequestOptions = {}): Promis
       cache: 'no-store',
     });
   } catch {
-    throw new ApiError(0, '서버에 연결할 수 없어요. 백엔드가 켜져 있는지 확인해 주세요.');
+    throw new ApiError(0, '서버에 연결할 수 없어요. 인터넷 연결을 확인하고 잠시 뒤 다시 시도해 주세요.');
   }
 
   const data: unknown = await response.json().catch(() => null);

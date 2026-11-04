@@ -35,8 +35,7 @@ export function StudentDetailPanel({
   onChanged: () => void;
 }) {
   const { data, error, setData } = useApi<StudentDetail>(
-    `/admin/students/${studentId}`,
-  );
+    `/admin/students/${studentId}`, { inline: true });
   const [tab, setTab] = useState<Tab>("basic");
   const [dialog, setDialog] = useState<Dialog>(null);
   const [issued, setIssued] = useState<Issued[] | null>(null);

@@ -25,8 +25,7 @@ type Tab = "신청됨" | "환불요청" | "전체";
 export function EnrollmentsScreen() {
   const [tab, setTab] = useState<Tab>("신청됨");
   const { data, error, reload } = useApi<EnrollmentRow[]>(
-    `/admin/enrollments?status=${encodeURIComponent(tab)}`,
-  );
+    `/admin/enrollments?status=${encodeURIComponent(tab)}`, { inline: true });
   const { data: counts, reload: reloadCounts } = useApi<EnrollmentRow[]>(
     "/admin/enrollments?status=%EC%A0%84%EC%B2%B4",
   );
