@@ -64,13 +64,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     // 쓰는 중에 로그인이 무효가 되면(만료·중지·탈퇴) 로그아웃 → 보호 화면이 로그인 화면으로 보낸다 (QA BUG-020)
     function onUnauthorized(event: Event) {
+      // 로그인한 상태에서만 한 번 알린다 (상태 갱신 함수 안에서 토스트를 띄우면 렌더 중 상태 변경 경고)
+      if (!readSession()) return;
       writeSession(null);
-      setSession((current) => {
-        if (current) {
-          toast.error((event as CustomEvent<string | undefined>).detail ?? "로그인이 만료됐어요. 다시 로그인해 주세요.");
-        }
-        return null;
-      });
+      setSession(null);
+      toast.error((event as CustomEvent<string | undefined>).detail ?? "로그인이 만료됐어요. 다시 로그인해 주세요.");
     }
     window.addEventListener(UNAUTHORIZED_EVENT, onUnauthorized);
     return () => window.removeEventListener(UNAUTHORIZED_EVENT, onUnauthorized);
