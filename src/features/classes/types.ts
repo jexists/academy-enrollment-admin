@@ -43,6 +43,10 @@ export interface TeacherRow {
   mustChangePassword: boolean;
   subject: string;
   hiredAt: string;
+  /** 소개 (결정41) */
+  bio: string | null;
+  /** 이력 — 한 줄에 하나 */
+  career: string | null;
   classes: { id: number; name: string }[];
 }
 

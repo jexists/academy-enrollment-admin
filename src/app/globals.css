@@ -103,6 +103,51 @@ body {
   outline-offset: 2px;
 }
 
+/* 학원 안내 본문 (마크다운) — 읽는 글 18/30, 표는 목록 줄처럼 */
+.guide-prose {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  font-size: var(--text-reading);
+  line-height: var(--text-reading--line-height);
+  color: var(--color-fg);
+}
+.guide-prose ul,
+.guide-prose ol {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding-left: 1.25rem;
+}
+.guide-prose ul { list-style: disc; }
+.guide-prose ol { list-style: decimal; }
+.guide-prose li::marker { color: var(--color-primary); }
+.guide-prose strong { font-weight: 700; }
+.guide-prose table {
+  width: 100%;
+  font-size: var(--text-body-sm);
+  line-height: var(--text-body-sm--line-height);
+  border-collapse: collapse;
+}
+.guide-prose th {
+  text-align: left;
+  font-weight: 500;
+  color: var(--color-subtle);
+  padding: 0.5rem 0.5rem 0.5rem 0;
+}
+.guide-prose td {
+  padding: 0.75rem 0.5rem 0.75rem 0;
+  border-top: 1px solid var(--color-line);
+}
+.guide-prose td:last-child,
+.guide-prose th:last-child {
+  text-align: right;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  padding-right: 0;
+}
+.guide-prose th:last-child { font-weight: 500; }
+
 dialog::backdrop {
   background: var(--color-dim);
 }
