@@ -12,11 +12,18 @@ interface ApiState<T> {
   setData: (data: T) => void;
 }
 
-/** 로그인 토큰을 붙여 GET 하고, 로딩·오류·다시 불러오기를 같이 돌려준다. path가 null이면 부르지 않는다 */
+/**
+ * 로그인 토큰을 붙여 GET 하고, 로딩·오류·다시 불러오기를 같이 돌려준다. path가 null이면 부르지 않는다.
+ * data는 **지금 path로 받은 것만** 돌려준다 — 자녀·날짜·반을 바꾸면 새 응답이 올 때까지 undefined(QA BUG-013).
+ * 같은 path를 reload 할 때는 이전 data를 그대로 보여 준다.
+ */
 export function useApi<T>(path: string | null): ApiState<T> {
   const { session } = useAuth();
   const token = session?.token;
-  const [data, setData] = useState<T | undefined>(undefined);
+  const [state, setState] = useState<{ key: string | null; value: T | undefined }>({
+    key: null,
+    value: undefined,
+  });
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [version, setVersion] = useState(0);
@@ -31,7 +38,7 @@ export function useApi<T>(path: string | null): ApiState<T> {
       try {
         const result = await api<T>(path, { token });
         if (!cancelled) {
-          setData(result);
+          setState({ key: path, value: result });
           setError(null);
         }
       } catch (reason) {
@@ -46,6 +53,8 @@ export function useApi<T>(path: string | null): ApiState<T> {
   }, [path, token, version]);
 
   const reload = useCallback(() => setVersion((v) => v + 1), []);
+  const setData = useCallback((value: T) => setState({ key: path, value }), [path]);
+  const data = path !== null && state.key === path ? state.value : undefined;
   return { data, error, loading, reload, setData };
 }
 
