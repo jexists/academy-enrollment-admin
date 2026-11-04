@@ -62,7 +62,7 @@ export function AttendanceScreen() {
   const params = useSearchParams();
   // 대시보드·내 스케줄에서 ?date=로 들어오면 그날부터
   const [date, setDate] = useState(() => params.get("date") ?? today());
-  const { data: sessions } = useApi<SessionItem[]>(
+  const { data: sessions, reload: reloadSessions } = useApi<SessionItem[]>(
     `/staff/sessions?date=${date}`,
   );
   const [picked, setPicked] = useState<number | null>(null);
@@ -118,6 +118,7 @@ export function AttendanceScreen() {
       });
       toast.success("출결을 저장했어요");
       reload();
+      reloadSessions(); // 왼쪽 목록의 미입력 → 입력함 (QA BUG-015)
     } catch (reason) {
       toast.error(errorMessage(reason));
     } finally {
