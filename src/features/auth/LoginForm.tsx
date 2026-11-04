@@ -24,9 +24,17 @@ export function LoginForm() {
   async function finish(request: Promise<Session>) {
     setBusy(true);
     setErrors({});
+    // 무료 서버는 쉬다가 깨어나는 데 1분 가까이 걸려서, 4초가 넘으면 기다리라고 알려 준다
+    const slow = window.setTimeout(
+      () => toast.info("서버를 깨우고 있어요. 처음 접속은 1분쯤 걸릴 수 있어요."),
+      4000,
+    );
     try {
       const session = await request;
       signIn(session);
+      // 떠난 화면도 숨긴 채 상태가 남아서, 로그아웃해 돌아왔을 때 처리 중·비밀번호가 남지 않게 비운다
+      setPassword("");
+      setBusy(false);
       router.replace(
         session.user.mustChangePassword
           ? "/change-password"
@@ -40,6 +48,8 @@ export function LoginForm() {
         setErrors(error.fieldErrors);
       else toast.error(errorMessage(error));
       setBusy(false);
+    } finally {
+      window.clearTimeout(slow);
     }
   }
 

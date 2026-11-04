@@ -2,28 +2,52 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Icon } from "@/components/ui/Icon";
 import { RequireAuth } from "@/features/auth/RequireAuth";
 import { useAuth } from "@/features/auth/AuthProvider";
+import { useToast } from "@/components/ui/Toast";
 import { ROLE_LABEL } from "@/lib/auth-storage";
 import { cn } from "@/lib/cn";
 import { navFor } from "./admin-nav";
 
 /** 어드민 공통 틀 (파이널 와이어프레임): 왼쪽 사이드바 + 위쪽 바 + 회색 바탕 위 흰 카드 */
 export function AdminShell({ children }: { children: ReactNode }) {
+  // 로그아웃을 누르면 로그인 화면이 뜰 때까지 "로그아웃하고 있어요"를 덮어 둔다 (느린 인터넷에서 멈춘 것처럼 보이지 않게)
+  // 이전 화면이 숨겨진 채 남아 있다가 다시 로그인하면 되살아나므로, 로그인 정보가 없을 때만 보인다
+  const { session } = useAuth();
+  const [leaving, setLeaving] = useState(false);
   return (
-    <RequireAuth roles={["ADMIN", "TEACHER"]}>
-      <div className="flex min-h-full bg-backdrop">
-        <Sidebar />
-        <div className="flex min-w-0 flex-1 flex-col">
-          <TopBar />
-          <main className="min-w-0 flex-1 px-8 pb-24">
-            <div className="mx-auto w-full max-w-[1200px]">{children}</div>
-          </main>
+    <>
+      {leaving && session === null && <LeavingOverlay />}
+      <RequireAuth roles={["ADMIN", "TEACHER"]}>
+        <div className="flex min-h-full bg-backdrop">
+          <Sidebar onLogout={() => setLeaving(true)} />
+          <div className="flex min-w-0 flex-1 flex-col">
+            <TopBar />
+            <main className="min-w-0 flex-1 px-8 pb-24">
+              <div className="mx-auto w-full max-w-[1200px]">{children}</div>
+            </main>
+          </div>
         </div>
-      </div>
-    </RequireAuth>
+      </RequireAuth>
+    </>
+  );
+}
+
+function LeavingOverlay() {
+  return (
+    <div
+      role="status"
+      aria-live="polite"
+      className="fixed inset-0 z-[60] flex flex-col items-center justify-center gap-3 bg-canvas/90"
+    >
+      <span
+        aria-hidden
+        className="size-6 animate-spin rounded-full border-2 border-primary border-t-transparent"
+      />
+      <p className="text-body text-muted">로그아웃하고 있어요</p>
+    </div>
   );
 }
 
@@ -42,11 +66,16 @@ function useActive() {
   return { items, active };
 }
 
-function Sidebar() {
+function Sidebar({ onLogout }: { onLogout: () => void }) {
   const { session, signOut } = useAuth();
   const router = useRouter();
+  const toast = useToast();
   const { items, active } = useActive();
   const user = session?.user;
+  // 로그아웃할 때 바로 넘어가도록 로그인 화면을 미리 받아 둔다
+  useEffect(() => {
+    router.prefetch("/login");
+  }, [router]);
   if (!user) return null;
 
   return (
@@ -89,8 +118,10 @@ function Sidebar() {
       <button
         type="button"
         onClick={() => {
-          signOut();
+          onLogout();
           router.replace("/login");
+          signOut();
+          toast.success("로그아웃했어요");
         }}
         className="flex h-10 items-center gap-3 rounded-control px-3 text-left text-body-sm text-muted hover:bg-s1 hover:text-fg"
       >
