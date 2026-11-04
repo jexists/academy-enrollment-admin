@@ -21,6 +21,7 @@ export const ADMIN_NAV: Record<'ADMIN' | 'TEACHER', NavItem[]> = {
     { href: '/makeups', label: '보강 관리', icon: 'repeat' },
     { href: '/accounting', label: '회계', icon: 'coins' },
     { href: '/staff', label: '직원 계정 관리', icon: 'shield' },
+    { href: '/chat-logs', label: '문의 기록', icon: 'history' },
     { href: '/audit', label: '변경 기록', icon: 'history' },
   ],
   TEACHER: [
