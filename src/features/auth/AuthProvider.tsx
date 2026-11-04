@@ -9,7 +9,8 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { api } from "@/lib/api";
+import { api, ApiError, UNAUTHORIZED_EVENT } from "@/lib/api";
+import { useToast } from "@/components/ui/Toast";
 import {
   readSession,
   writeSession,
@@ -46,8 +47,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const next = { token: saved.token, user };
         writeSession(next);
         setSession(next);
-      } catch {
+      } catch (reason) {
         if (cancelled) return;
+        // 서버가 아직 깨는 중이거나 연결이 끊긴 거면(0·5xx) 로그인을 지우지 않는다. 무효한 로그인(401)만 지운다
+        if (reason instanceof ApiError && (reason.status === 0 || reason.status >= 500)) return;
         writeSession(null);
         setSession(null);
       }
@@ -56,6 +59,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       cancelled = true;
     };
   }, []);
+
+  const toast = useToast();
+  useEffect(() => {
+    // 쓰는 중에 로그인이 무효가 되면(만료·중지·탈퇴) 로그아웃 → 보호 화면이 로그인 화면으로 보낸다 (QA BUG-020)
+    function onUnauthorized(event: Event) {
+      writeSession(null);
+      setSession((current) => {
+        if (current) {
+          toast.error((event as CustomEvent<string | undefined>).detail ?? "로그인이 만료됐어요. 다시 로그인해 주세요.");
+        }
+        return null;
+      });
+    }
+    window.addEventListener(UNAUTHORIZED_EVENT, onUnauthorized);
+    return () => window.removeEventListener(UNAUTHORIZED_EVENT, onUnauthorized);
+  }, [toast]);
 
   const signIn = useCallback((next: Session) => {
     writeSession(next);
