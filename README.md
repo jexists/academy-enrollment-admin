@@ -34,6 +34,10 @@
 
 ## 화면 캡처
 
+<a href="https://github.com/jexists/academy-enrollment-web/blob/main/docs/%ED%95%9C%EB%B9%9B%EC%88%98%ED%95%99-%EB%8D%B0%EB%AA%A8.mp4"><img src="https://github.com/jexists/academy-enrollment-web/blob/main/docs/captures/00-demo-video.png?raw=true" alt="한빛수학 시연 영상 첫 화면" width="480"></a>
+
+[시연 영상 보기](<https://github.com/jexists/academy-enrollment-web/blob/main/docs/%ED%95%9C%EB%B9%9B%EC%88%98%ED%95%99-%EB%8D%B0%EB%AA%A8.mp4>) (1분 41초, 음성 포함)
+
 [원장 대시보드](https://github.com/jexists/academy-enrollment-web/blob/main/docs/captures/22-admin-dashboard.png) &nbsp;·&nbsp; [시간표 생성](https://github.com/jexists/academy-enrollment-web/blob/main/docs/captures/28-admin-timetable-new-B9.png) &nbsp;·&nbsp; [출결 입력](https://github.com/jexists/academy-enrollment-web/blob/main/docs/captures/30-admin-attendance-B10.png) &nbsp;·&nbsp; [회계](https://github.com/jexists/academy-enrollment-web/blob/main/docs/captures/32-admin-accounting-B12-C15.png) &nbsp;·&nbsp; [문의 기록](https://github.com/jexists/academy-enrollment-web/blob/main/docs/captures/42-admin-chat-logs.png)
 
 전체 캡처 폴더: [academy-enrollment-web/docs/captures](https://github.com/jexists/academy-enrollment-web/tree/main/docs/captures)
