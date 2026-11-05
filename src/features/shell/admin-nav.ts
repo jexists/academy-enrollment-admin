@@ -36,3 +36,17 @@ export const ADMIN_NAV: Record<'ADMIN' | 'TEACHER', NavItem[]> = {
 export function navFor(role: Role): NavItem[] {
   return role === 'ADMIN' || role === 'TEACHER' ? ADMIN_NAV[role] : [];
 }
+
+/**
+ * 이 주소를 볼 수 있는 역할. 사이드 메뉴가 곧 권한표라서, 메뉴에 있는 주소와 그 하위 경로만 연다
+ * (예: 강사가 /staff·/accounting을 직접 쳐도 들어가지 못하게 — QA BUG-014). 진짜 권한은 백엔드가 막는다.
+ */
+export function rolesFor(pathname: string): Role[] {
+  const opens = (role: 'ADMIN' | 'TEACHER') =>
+    ADMIN_NAV[role].some((item) =>
+      item.href === '/'
+        ? pathname === '/'
+        : pathname === item.href || pathname.startsWith(`${item.href}/`),
+    );
+  return (['ADMIN', 'TEACHER'] as const).filter(opens);
+}

@@ -35,8 +35,7 @@ export function StudentDetailPanel({
   onChanged: () => void;
 }) {
   const { data, error, setData } = useApi<StudentDetail>(
-    `/admin/students/${studentId}`,
-  );
+    `/admin/students/${studentId}`, { inline: true });
   const [tab, setTab] = useState<Tab>("basic");
   const [dialog, setDialog] = useState<Dialog>(null);
   const [issued, setIssued] = useState<Issued[] | null>(null);
@@ -137,6 +136,8 @@ export function StudentDetailPanel({
       )}
 
       <SchoolChangeDialog
+        // 열 때마다 새로 그려 지난번 입력이 남지 않게 (같은 보정·메모를 실수로 두 번 넣지 않게 — QA BUG-026)
+        key={dialog === "school" ? "school-open" : "school-closed"}
         open={dialog === "school"}
         onClose={() => setDialog(null)}
         submit={(body) =>
@@ -149,6 +150,8 @@ export function StudentDetailPanel({
         onDone={(next) => updated(next, "학적 이력을 추가했어요")}
       />
       <GradeDialog
+        // 열 때마다 새로 그려 지난번 입력이 남지 않게 (같은 보정·메모를 실수로 두 번 넣지 않게 — QA BUG-026)
+        key={dialog === "grade" ? "grade-open" : "grade-closed"}
         open={dialog === "grade"}
         onClose={() => setDialog(null)}
         submit={(body) =>
@@ -161,6 +164,8 @@ export function StudentDetailPanel({
         onDone={(next) => updated(next, "학년 보정을 저장했어요")}
       />
       <NoteDialog
+        // 열 때마다 새로 그려 지난번 입력이 남지 않게 (같은 보정·메모를 실수로 두 번 넣지 않게 — QA BUG-026)
+        key={dialog === "note" ? "note-open" : "note-closed"}
         open={dialog === "note"}
         data={data}
         onClose={() => setDialog(null)}

@@ -37,8 +37,15 @@ export function Modal({ open, onClose, title, children, actions, role = 'dialog'
       aria-labelledby={titleId}
       onClose={onClose}
       onClick={(event) => {
-        // 어두운 바깥을 누르면 닫는다
-        if (event.target === event.currentTarget) onClose();
+        // 어두운 바깥을 누르면 닫는다. 창 안쪽 여백(p-6)을 눌러도 target이 dialog라서 좌표로 바깥인지 본다
+        if (event.target !== event.currentTarget) return;
+        const box = event.currentTarget.getBoundingClientRect();
+        const inside =
+          event.clientX >= box.left &&
+          event.clientX <= box.right &&
+          event.clientY >= box.top &&
+          event.clientY <= box.bottom;
+        if (!inside) onClose();
       }}
       className={cn(
         'bg-canvas p-6 text-fg',

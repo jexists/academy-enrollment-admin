@@ -71,6 +71,8 @@ export function SessionActions({
       </p>
 
       <SessionDialog
+        // 고른 수업이 바뀌면 새로 그려서 보충 시간 기본값이 그 수업 시간이 되게 (QA BUG-018)
+        key={picked?.id ?? "none"}
         title={picked ? `${picked.date} 휴강 처리` : ""}
         open={picked !== null}
         cancelMode
@@ -141,15 +143,22 @@ function SessionDialog({
         endTime: form.endTime,
         memo: form.memo || undefined,
       };
-      await submit(
+      const result = (await submit(
         cancelMode
           ? {
               memo: form.memo || undefined,
               replacement: withExtra === "yes" ? slot : undefined,
             }
           : slot,
+      )) as { rejectedMakeups?: number } | undefined;
+      const rejected = result?.rejectedMakeups ?? 0;
+      toast.success(
+        !cancelMode
+          ? "보충 수업을 추가했어요"
+          : rejected > 0
+            ? `휴강 처리했어요. 이 수업에 잡힌 보강 ${rejected}건은 거절로 바꿨어요`
+            : "휴강 처리했어요",
       );
-      toast.success(cancelMode ? "휴강 처리했어요" : "보충 수업을 추가했어요");
       setForm({ ...form, date: "", memo: "" });
       onDone();
     } catch (reason) {

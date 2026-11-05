@@ -21,8 +21,7 @@ export function StudentsScreen() {
   const [query, setQuery] = useState("");
   const deferred = useDeferredValue(query);
   const { data, error, reload } = useApi<StudentRow[]>(
-    `/admin/students${deferred ? `?q=${encodeURIComponent(deferred)}` : ""}`,
-  );
+    `/admin/students${deferred ? `?q=${encodeURIComponent(deferred)}` : ""}`, { inline: true });
 
   return (
     <>

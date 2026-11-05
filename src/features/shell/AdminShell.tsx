@@ -2,14 +2,14 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Icon } from "@/components/ui/Icon";
 import { RequireAuth } from "@/features/auth/RequireAuth";
 import { useAuth } from "@/features/auth/AuthProvider";
 import { useToast } from "@/components/ui/Toast";
 import { ROLE_LABEL } from "@/lib/auth-storage";
 import { cn } from "@/lib/cn";
-import { navFor } from "./admin-nav";
+import { navFor, rolesFor } from "./admin-nav";
 
 /** 어드민 공통 틀 (파이널 와이어프레임): 왼쪽 사이드바 + 위쪽 바 + 회색 바탕 위 흰 카드 */
 export function AdminShell({ children }: { children: ReactNode }) {
@@ -17,10 +17,13 @@ export function AdminShell({ children }: { children: ReactNode }) {
   // 이전 화면이 숨겨진 채 남아 있다가 다시 로그인하면 되살아나므로, 로그인 정보가 없을 때만 보인다
   const { session } = useAuth();
   const [leaving, setLeaving] = useState(false);
+  const pathname = usePathname();
+  // 메뉴에 없는 화면은 그 역할의 첫 화면으로 돌려보낸다 (강사가 관리자 주소를 직접 쳐도)
+  const roles = useMemo(() => rolesFor(pathname), [pathname]);
   return (
     <>
       {leaving && session === null && <LeavingOverlay />}
-      <RequireAuth roles={["ADMIN", "TEACHER"]}>
+      <RequireAuth roles={roles}>
         <div className="flex min-h-full bg-backdrop">
           <Sidebar onLogout={() => setLeaving(true)} />
           <div className="flex min-w-0 flex-1 flex-col">

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { FilterChips } from "@/components/ui/FilterChips";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -25,23 +25,43 @@ export function ScoresScreen() {
   const [classId, setClassId] = useState<number | null>(null);
   const cid = classId ?? classes?.[0]?.id ?? null;
   const [exam, setExam] = useState({ examName: "", examDate: "" });
+  // 시험 이름을 치는 동안 글자마다 다시 부르지 않게 0.4초 쉬었다가 조회 (QA BUG-016)
+  const [lookup, setLookup] = useState(exam);
+  useEffect(() => {
+    const timer = setTimeout(() => setLookup(exam), 400);
+    return () => clearTimeout(timer);
+  }, [exam]);
   const query = cid
-    ? `/staff/scores?classId=${cid}${exam.examName && exam.examDate ? `&examName=${encodeURIComponent(exam.examName)}&examDate=${exam.examDate}` : ""}`
+    ? `/staff/scores?classId=${cid}${lookup.examName && lookup.examDate ? `&examName=${encodeURIComponent(lookup.examName)}&examDate=${lookup.examDate}` : ""}`
     : null;
-  const { data, reload } = useApi<Sheet>(query);
+  const { data: fresh, reload } = useApi<Sheet>(query);
+  // 다시 부르는 동안에도 같은 반 학생 목록은 그대로 보여 준다
+  const [sheet, setSheet] = useState<{ cid: number; data: Sheet } | null>(null);
+  const data = sheet && sheet.cid === cid ? sheet.data : undefined;
   const [values, setValues] = useState<Record<number, string>>({});
+  // 선생님이 직접 고친 칸 — 다시 불러와도 덮어쓰지 않는다 (시험 이름을 나중에 고쳐도 점수가 남게)
+  const edited = useRef(new Set<number>());
   const [errors, setErrors] = useState<Record<number, string>>({});
   const [busy, setBusy] = useState(false);
   const mutate = useMutate();
   const toast = useToast();
 
   useEffect(() => {
-    if (!data) return;
-    const next: Record<number, string> = {};
-    for (const s of data.students)
-      next[s.studentId] = s.score === null ? "" : String(s.score);
-    queueMicrotask(() => setValues(next));
-  }, [data]);
+    if (!fresh || !cid) return;
+    queueMicrotask(() => {
+      setSheet({ cid, data: fresh });
+      setValues((prev) => {
+        const next: Record<number, string> = {};
+        for (const s of fresh.students)
+          next[s.studentId] = edited.current.has(s.studentId)
+            ? (prev[s.studentId] ?? "")
+            : s.score === null
+              ? ""
+              : String(s.score);
+        return next;
+      });
+    });
+  }, [fresh, cid]);
 
   const invalid = Object.entries(values).find(
     ([, v]) => v !== "" && (!/^\d+$/.test(v) || Number(v) > 100),
@@ -68,6 +88,7 @@ export function ScoresScreen() {
         })),
       });
       toast.success(`${r.saved}명 점수를 저장했어요`);
+      edited.current.clear();
       reload();
     } catch (reason) {
       toast.error(errorMessage(reason));
@@ -93,6 +114,7 @@ export function ScoresScreen() {
           value={cid ?? 0}
           onChange={(id) => {
             setClassId(id);
+            edited.current.clear();
             setExam({ examName: "", examDate: "" });
           }}
         />
@@ -110,7 +132,10 @@ export function ScoresScreen() {
                     <button
                       type="button"
                       onClick={() =>
-                        setExam({ examName: e.examName, examDate: e.examDate })
+                        {
+                          edited.current.clear();
+                          setExam({ examName: e.examName, examDate: e.examDate });
+                        }
                       }
                       className="flex w-full items-center gap-2 px-2 py-2.5 text-left text-body-sm hover:bg-s1"
                     >
@@ -154,6 +179,7 @@ export function ScoresScreen() {
                     value={values[s.studentId] ?? ""}
                     onChange={(e) => {
                       const v = e.target.value.replace(/[^\d]/g, "");
+                      edited.current.add(s.studentId);
                       setValues({ ...values, [s.studentId]: v });
                       setErrors({
                         ...errors,
