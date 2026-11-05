@@ -294,13 +294,22 @@ function PayDialog({
     setBusy(true);
     setErrors({});
     try {
-      await mutate("/admin/payments", "POST", {
-        enrollmentId: bill.enrollmentId,
-        yearMonth: month,
-        ...form,
-        discountAmount: discount,
-      });
-      toast.success("납부를 기록했어요");
+      const result = await mutate<{ refundAmount?: number }>(
+        "/admin/payments",
+        "POST",
+        {
+          enrollmentId: bill.enrollmentId,
+          yearMonth: month,
+          ...form,
+          discountAmount: discount,
+        },
+      );
+      // 이미 그만둔 달의 납부면 백엔드가 환불액을 다시 확정한다 (QA BUG-009)
+      toast.success(
+        result?.refundAmount !== undefined
+          ? `납부를 기록했어요. 환불액을 ${won(result.refundAmount)}원으로 다시 계산했어요`
+          : "납부를 기록했어요",
+      );
       onDone();
     } catch (reason) {
       if (
